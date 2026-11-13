@@ -1,148 +1,28 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ORBITAL FORGE: CML 1–4 — NASA Space Mission Design Game</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <!-- TOP MISSION CONTROL COMMAND BAR -->
-  <header class="topbar">
-    <div class="brand-group">
-      <img src="assets/logo.svg" alt="Orbital Forge Logo" class="brand-logo" />
-      <div class="mode-badges">
-        <select id="mission-select" class="pill-select" title="Select Mission Scenario"></select>
-        <select id="mode-select" class="pill-select" title="Single Player or 4-Seat Team Mode">
-          <option value="solo">Mode: Solo Chief Architect</option>
-          <option value="team">Mode: 4-Seat MDL Team Co-Op</option>
-        </select>
-        <select id="anomaly-select" class="pill-select" title="Inject Engineering Constraint Event">
-          <option value="none">Events: Nominal Conditions</option>
-          <option value="rideshare_cap">Event: Rideshare Mass Cap -1.5 kg</option>
-          <option value="solar_storm">Event: Solar Max Drag (+35% Decay)</option>
-        </select>
-      </div>
-    </div>
-    <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-      <button class="btn" id="btn-guide">📘 NASA Physics & CML Guide</button>
-      <button class="btn" id="btn-export">🔗 Share / Compare Code</button>
-      <button class="btn btn-success" id="btn-debrief">📊 Launch & Mission Debrief</button>
-    </div>
-  </header>
-
-  <!-- JPL CONCEPT MATURITY LEVEL (CML 1-4) GATE STEPPER -->
-  <nav class="cml-bar">
-    <div class="cml-steps">
-      <button class="cml-step active" data-cml="1"><span class="cml-dot"></span>CML 1: Science Concept</button>
-      <button class="cml-step" data-cml="2"><span class="cml-dot"></span>CML 2: Orbit & Launch</button>
-      <button class="cml-step" data-cml="3"><span class="cml-dot"></span>CML 3: Subsystem Trades</button>
-      <button class="cml-step" data-cml="4"><span class="cml-dot"></span>CML 4: Point Design Gate</button>
-    </div>
-    <div id="cml-status-text" style="font-family:var(--font-mono);font-size:0.76rem;color:var(--cyan)">
-      MATURITY GATES PASSED: 1 / 4
-    </div>
-  </nav>
-
-  <!-- 6 COUPLED RESOURCE TELEMETRY BARS -->
-  <section class="resource-strip" id="resource-strip"></section>
-
-  <!-- MAIN 3-COLUMN WORKSPACE -->
-  <main class="workspace">
-    <!-- LEFT: 4 NASA MISSION SEGMENTS & SUBSYSTEM CONFIGURATOR -->
-    <section class="panel">
-      <div class="seg-tabs">
-        <button class="seg-tab active" data-seg="science">1. Science</button>
-        <button class="seg-tab" data-seg="spacecraft">2. Space Bus</button>
-        <button class="seg-tab" data-seg="orbit">3. Orbit/Launch</button>
-        <button class="seg-tab" data-seg="ground">4. Ground Ops</button>
-      </div>
-      <div class="panel-body" id="segment-editor-body"></div>
-    </section>
-
-    <!-- CENTER: INTERACTIVE 3D CAD & MISSION VIZ ORBITAL SIMULATOR -->
-    <section class="panel">
-      <div class="panel-header">
-        <span class="panel-title" id="viewport-label">3D SPACECRAFT CAD INSPECTOR (DRAG TO ROTATE)</span>
-        <div style="display:flex;gap:0.4rem">
-          <button class="btn" id="btn-view-cad">🛰️ 3D Bus CAD</button>
-          <button class="btn btn-primary" id="btn-view-orbit">🌍 3D Mission Viz</button>
-        </div>
-      </div>
-      <div class="viewport-wrap">
-        <div id="three-canvas"></div>
-        <div class="viewport-hud-top">
-          <div class="hud-chip" id="sim-phase-label">PHASE 1: DESIGN CONFIGURATION</div>
-          <div class="hud-chip">MEI SCORE: <strong id="live-mei-score" style="color:var(--emerald)">0 / 1000</strong></div>
-        </div>
-      </div>
-      <div class="sim-controls">
-        <div class="sim-row">
-          <button class="btn btn-primary" id="btn-sim-play">▶ Run 3D Sim</button>
-          <span style="font-family:var(--font-mono);font-size:0.74rem;color:var(--text-muted)">
-            Eclipse DoD: <strong id="battery-dod-readout" style="color:#fff">0%</strong> ·
-            Thermal: <strong id="thermal-margin-readout" style="color:#fff">+0 W</strong>
-          </span>
-        </div>
-        <input type="range" id="sim-scrubber" min="0" max="100" value="0" class="timeline-slider" />
-      </div>
-    </section>
-
-    <!-- RIGHT: GODDARD MDL CONCURRENT DIAGNOSTICS & TELEMETRY -->
-    <aside class="panel right-col">
-      <div class="panel-header">
-        <span class="panel-title">MDL Concurrent Diagnostics</span>
-        <img src="assets/mission-patch.svg" alt="Mission Patch" style="height:26px" />
-      </div>
-      <div class="panel-body">
-        <div id="team-status-box"></div>
-        <div class="section-label"><span>Live Subsystem Coupling Alerts</span></div>
-        <div id="mdl-alerts"></div>
-
-        <div class="section-label"><span>Orbital Eclipse Battery Profile</span></div>
-        <canvas id="telemetry-canvas" class="telemetry-canvas"></canvas>
-
-        <div class="section-label" style="margin-top:0.85rem"><span>Spacecraft Architecture Reference</span></div>
-        <img src="assets/bus-blueprint.svg" alt="Spacecraft Subsystem Blueprint" style="width:100%;border-radius:6px;border:1px solid var(--border-subtle)" />
-      </div>
-    </aside>
-  </main>
-
-  <!-- POST-MISSION DEBRIEF & NASA TWIN MODAL -->
-  <div class="modal-backdrop hidden" id="debrief-modal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h2 style="font-size:1.1rem;color:var(--cyan)">NASA Mission Design Lab — Flight Readiness & Debrief Report</h2>
-        <button class="btn" data-close-modal>✕ Close</button>
-      </div>
-      <div id="debrief-body"></div>
-    </div>
-  </div>
-
-  <!-- SCIENTIFIC MODELS, ASSUMPTIONS & CREDITS MODAL -->
-  <div class="modal-backdrop hidden" id="guide-modal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h2 style="font-size:1.1rem;color:var(--cyan)">NASA Scientific Foundations, Equations & Data Attribution</h2>
-        <button class="btn" data-close-modal>✕ Close</button>
-      </div>
-      <p style="font-size:0.84rem;color:#CBD5E1;line-height:1.5;margin-bottom:0.75rem">
-        <strong>ORBITAL FORGE: CML 1–4</strong> transforms official NASA systems-engineering methodologies into an interactive concurrent design simulation.
-      </p>
-      <div class="formula-tag">
-        • Power Balance: P_gen = P_array × η_solar × (1 - f_eclipse) × 0.86 &nbsp;|&nbsp; Eclipse DoD = (P_eclipse × t_eclipse) / E_batt<br/>
-        • Propulsion Scaling: Δv_avail = Δv_nominal × clamp(M_ref / M_wet, 0.72, 1.18)<br/>
-        • Data Closure: Data_return = min(Data_gen × DutyCycle, Cap_downlink_regime)
-      </div>
-      <h4 style="color:#fff;margin:0.85rem 0 0.4rem;font-size:0.88rem">Model Fidelity & Transparency Disclosure</h4>
-      <ul style="font-size:0.8rem;color:#CBD5E1;padding-left:1.2rem;line-height:1.5">
-        <li><strong>Authentic NASA Frameworks:</strong> JPL Concept Maturity Levels (CML 1–4), Goddard Mission Design Lab (MDL) coupled subsystem trades, NASA 4-Segment Architecture (Launch, Space, Ground, User), and CubeSat 101 form factors.</li>
-        <li><strong>Analytical Simplifications:</strong> Orbital motion uses Keplerian two-body circular/inclined approximations and analytical Δv budgets inspired by NASA GMAT rather than numerical N-body integration.</li>
-        <li><strong>Attributions:</strong> Inspired by NASA Systems Engineering Handbook, GMAT, JPL CMLs, GSFC MDL, NASA Mission Viz, JWST Build-It-Yourself Telescope Game, NASA CSLI CubeSat 101, and CSA Digital Activities.</li>
-      </ul>
-    </div>
-  </div>
-
-  <script type="module" src="app.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ORBITAL FORGE — NASA Space Mission Designer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <style>
+      body {
+        background-color: #0F172A;
+        color: #F8FAFC;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      }
+      @keyframes pulseGlow {
+        0%, 100% { opacity: 0.75; }
+        50% { opacity: 1; }
+      }
+      .glow-pulse { animation: pulseGlow 2.4s infinite ease-in-out; }
+    </style>
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <div id="app" class="min-h-screen flex flex-col"></div>
+    <script src="./app.js"></script>
+  </body>
 </html>
