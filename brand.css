@@ -1,0 +1,9 @@
+/* Team brand layer: rounded shapes and neon glow on top of the tokens in theme.css. */
+.sd-cta, .sd-key, .sd-ghost-btn, .sd-back { border-radius: 12px; }
+.sd-cta { border-bottom-width: 3px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
+.sd-cta:hover:not(:disabled), .sd-key[aria-pressed='true'] { box-shadow: 0 0 14px rgba(255, 153, 0, 0.6); }
+.sd-ghost-btn:hover, .sd-back:hover { border-color: var(--sd-crt-hi); box-shadow: 0 0 14px rgba(0, 210, 255, 0.45); }
+.sd-crt { border-radius: 20px; box-shadow: var(--sd-crt-inset), 0 0 14px rgba(0, 210, 255, 0.55); }
+.sd-coach, .sd-brief, .sd-confirm { border-radius: 16px; }
+.sd-brand-name { text-shadow: 0 0 14px #00d2ff; }
+.sd :focus-visible { outline-color: #00d2ff; }
